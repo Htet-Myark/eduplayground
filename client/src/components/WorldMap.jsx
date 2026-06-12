@@ -28,7 +28,7 @@ function spawnPoint() {
 }
 
 const TREES = [
-  [-5, -10], [5, -10], [-14, 0], [14, 0], [-6, 11], [6, 11], [0, 5], [-3, -4], [4, -2],
+  [-5, -10], [5, -10], [-14, 0], [14, 0], [-6, 11], [6, 11], [3.5, 3], [-3, -4], [4, -2],
 ];
 const ROCKS = [[-8, 2], [8, -2], [2, 9], [-2, -8], [12, 2]];
 
@@ -184,7 +184,50 @@ function Station({ station, active, onTravel }) {
   );
 }
 
-function Player({ targetRef, onNearChange, spawn, jumpRef }) {
+function Joystick({ moveRef }) {
+  const baseRef = useRef(null);
+  const activeRef = useRef(false);
+  const [knob, setKnob] = useState({ x: 0, y: 0 });
+  const RADIUS = 38;
+
+  const update = (e) => {
+    const rect = baseRef.current.getBoundingClientRect();
+    let dx = e.clientX - (rect.left + rect.width / 2);
+    let dy = e.clientY - (rect.top + rect.height / 2);
+    const len = Math.hypot(dx, dy);
+    if (len > RADIUS) {
+      dx = (dx / len) * RADIUS;
+      dy = (dy / len) * RADIUS;
+    }
+    setKnob({ x: dx, y: dy });
+    moveRef.current = { x: dx / RADIUS, z: dy / RADIUS };
+  };
+
+  const release = () => {
+    activeRef.current = false;
+    setKnob({ x: 0, y: 0 });
+    moveRef.current = { x: 0, z: 0 };
+  };
+
+  return (
+    <div
+      ref={baseRef}
+      className="world-overlay world-joystick"
+      onPointerDown={(e) => {
+        activeRef.current = true;
+        try { e.currentTarget.setPointerCapture(e.pointerId); } catch (_) {}
+        update(e);
+      }}
+      onPointerMove={(e) => { if (activeRef.current) update(e); }}
+      onPointerUp={release}
+      onPointerCancel={release}
+    >
+      <div className="world-joystick-knob" style={{ transform: `translate(${knob.x}px, ${knob.y}px)` }} />
+    </div>
+  );
+}
+
+function Player({ targetRef, onNearChange, spawn, jumpRef, moveRef }) {
   const groupRef = useRef();
   const keysRef = useRef({});
   const nearRef = useRef(null);
@@ -222,6 +265,13 @@ function Player({ targetRef, onNearChange, spawn, jumpRef }) {
     if (keys.s || keys.arrowdown) dz += 1;
     if (keys.a || keys.arrowleft) dx -= 1;
     if (keys.d || keys.arrowright) dx += 1;
+
+    // virtual joystick (mobile)
+    const joy = moveRef.current;
+    if (dx === 0 && dz === 0 && joy && Math.hypot(joy.x, joy.z) > 0.18) {
+      dx = joy.x;
+      dz = joy.z;
+    }
 
     if (dx !== 0 || dz !== 0) {
       targetRef.current = null;
@@ -342,7 +392,7 @@ function Player({ targetRef, onNearChange, spawn, jumpRef }) {
   );
 }
 
-function WorldScene({ targetRef, onNearChange, onTravel, activeId, spawn, jumpRef }) {
+function WorldScene({ targetRef, onNearChange, onTravel, activeId, spawn, jumpRef, moveRef }) {
   return (
     <>
       <ambientLight intensity={0.55} />
@@ -369,7 +419,7 @@ function WorldScene({ targetRef, onNearChange, onTravel, activeId, spawn, jumpRe
         <Station key={station.id} station={station} active={activeId === station.id} onTravel={(s) => onTravel(s)} />
       ))}
 
-      <Player targetRef={targetRef} onNearChange={onNearChange} spawn={spawn} jumpRef={jumpRef} />
+      <Player targetRef={targetRef} onNearChange={onNearChange} spawn={spawn} jumpRef={jumpRef} moveRef={moveRef} />
     </>
   );
 }
@@ -378,6 +428,7 @@ function WorldMap({ onNavigate }) {
   const [nearId, setNearId] = useState(null);
   const targetRef = useRef(null);
   const jumpRef = useRef(false);
+  const moveRef = useRef({ x: 0, z: 0 });
   const [spawn] = useState(spawnPoint);
 
   const nearStation = STATIONS.find((s) => s.id === nearId) || null;
@@ -408,7 +459,7 @@ function WorldMap({ onNavigate }) {
     <div className="world-shell">
       <Canvas camera={{ position: [0, 9, 16], fov: 55 }} dpr={[1, 1.8]}>
         <color attach="background" args={['#07111f']} />
-        <WorldScene targetRef={targetRef} onNearChange={setNearId} onTravel={travel} activeId={nearId} spawn={spawn} jumpRef={jumpRef} />
+        <WorldScene targetRef={targetRef} onNearChange={setNearId} onTravel={travel} activeId={nearId} spawn={spawn} jumpRef={jumpRef} moveRef={moveRef} />
       </Canvas>
 
       <div className="world-overlay world-header">
@@ -417,6 +468,8 @@ function WorldMap({ onNavigate }) {
           <p className="small" style={{ margin: 0 }}>Walk with WASD / arrows or tap where you want to go. Space to jump.</p>
         </div>
       </div>
+
+      <Joystick moveRef={moveRef} />
 
       <button
         className="world-overlay world-jump-btn"
