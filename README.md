@@ -184,7 +184,7 @@ GitHub Copilot was used throughout the development of this project:
 ### Run it
 ```bash
 git clone <your-repo-url>
-cd creative-app
+cd eduplayground
 npm install                                  # installs client, server, and mcp workspaces
 echo "GITHUB_TOKEN=ghp_your_token" > server/.env
 npm run dev
