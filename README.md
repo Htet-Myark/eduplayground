@@ -1,3 +1,6 @@
+<<<<<<< HEAD
+# creative-app
+=======
 # Agent League — AI-Powered Learning & Creativity World
 
 > **Microsoft Agents League @ AISF 2026 — Battle #1: Creative Apps with GitHub Copilot**
@@ -249,3 +252,4 @@ agent-league/
 ## License
 
 MIT — see [LICENSE](LICENSE) for full text.
+>>>>>>> master
