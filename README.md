@@ -183,7 +183,7 @@ GitHub Copilot was used throughout the development of this project:
 
 ### Run it
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/Htet-Myark/eduplayground
 cd eduplayground
 npm install                                  # installs client, server, and mcp workspaces
 echo "GITHUB_TOKEN=ghp_your_token" > server/.env 
@@ -231,18 +231,9 @@ eduplayground/
 
 ---
 
-## Contest Compliance
+## Video Link
 
-| Requirement | Status |
-|---|---|
-| Public GitHub repository + README | Yes |
-| Architecture diagram | Yes — Mermaid diagram above |
-| GitHub Copilot usage documented | Yes |
-| Microsoft IQ — **Foundry IQ** | Yes — 5 endpoints: riddles · vision · stories · recaps · hints |
-| MCP Server for Copilot | Yes — 4 tools via `.vscode/mcp.json` |
-| Creative application | Yes — gamified 3D learning world |
-| Demo video (max 5 min, YouTube/Vimeo) | Link to be added before submitting |
-| Track | Battle #1 — Creative Apps |
+https://youtu.be/R0YxucEotTU
 
 ---
 
