@@ -1,16 +1,21 @@
 import OpenAI from 'openai';
 
-export function isFoundryConfigured() {
-  return Boolean(process.env.GITHUB_TOKEN);
+export function isGeminiConfigured() {
+  return Boolean(process.env.GEMINI_API_KEY?.trim());
 }
 
 function getClient() {
-  if (!process.env.GITHUB_TOKEN) return null;
+  const apiKey = process.env.GEMINI_API_KEY?.trim();
+  if (!apiKey) return null;
+
   return new OpenAI({
-    baseURL: 'https://models.inference.ai.azure.com',
-    apiKey: process.env.GITHUB_TOKEN,
+    baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai/',
+    apiKey,
   });
 }
+
+const MODEL = () => process.env.GEMINI_MODEL?.trim() || 'gemini-3.8-flash';
+const CONFIG_ERROR = 'Gemini is not configured. Set GEMINI_API_KEY in server/.env.';
 
 const RIDDLE_TOPICS = [
   'animals', 'nature', 'food and fruit', 'vehicles and transport',
@@ -24,10 +29,10 @@ export function randomTopic() {
 
 export async function classifyImage(imageBase64, mimeType, expectedAnswer) {
   const client = getClient();
-  if (!client) throw new Error('GitHub token not configured. Add GITHUB_TOKEN to server/.env');
+  if (!client) throw new Error(CONFIG_ERROR);
 
   const completion = await client.chat.completions.create({
-    model: 'gpt-4o-mini',
+    model: MODEL(),
     messages: [
       {
         role: 'user',
@@ -60,10 +65,10 @@ Respond with valid JSON only — no extra text:
 
 export async function generateLogoHint(brandName) {
   const client = getClient();
-  if (!client) throw new Error('GitHub token not configured. Add GITHUB_TOKEN to server/.env');
+  if (!client) throw new Error(CONFIG_ERROR);
 
   const completion = await client.chat.completions.create({
-    model: 'gpt-4o-mini',
+    model: MODEL(),
     messages: [
       {
         role: 'system',
@@ -91,7 +96,7 @@ Respond ONLY with valid JSON — no extra text.`;
 
 export async function generateBedtimeStory(choices) {
   const client = getClient();
-  if (!client) throw new Error('GitHub token not configured. Add GITHUB_TOKEN to server/.env');
+  if (!client) throw new Error(CONFIG_ERROR);
 
   const { hero, trait, place, friend, magic } = choices;
 
@@ -107,7 +112,7 @@ Introduce the hero and friend, begin a gentle adventure, and stop in the middle 
 Respond with JSON: { "title": "a short magical story title", "paragraphs": ["...", ... 8 paragraphs] }`;
 
   const firstCompletion = await client.chat.completions.create({
-    model: 'gpt-4o-mini',
+    model: MODEL(),
     messages: [
       { role: 'system', content: STORY_SYSTEM_PROMPT },
       { role: 'user', content: setupMessage },
@@ -123,7 +128,7 @@ Respond with JSON: { "title": "a short magical story title", "paragraphs": ["...
   }
 
   const secondCompletion = await client.chat.completions.create({
-    model: 'gpt-4o-mini',
+    model: MODEL(),
     messages: [
       { role: 'system', content: STORY_SYSTEM_PROMPT },
       { role: 'user', content: setupMessage },
@@ -148,17 +153,17 @@ Respond with JSON: { "paragraphs": ["...", ... 8 paragraphs] }`,
   return {
     title: firstPart.title,
     paragraphs: [...firstPart.paragraphs, ...secondPart.paragraphs],
-    source: 'GitHub Models (Azure AI infrastructure) — Foundry IQ',
+    source: 'Google Gemini',
     model: firstCompletion.model,
   };
 }
 
 export async function generateMovieRecap(title) {
   const client = getClient();
-  if (!client) throw new Error('GitHub token not configured. Add GITHUB_TOKEN to server/.env');
+  if (!client) throw new Error(CONFIG_ERROR);
 
   const completion = await client.chat.completions.create({
-    model: 'gpt-4o-mini',
+    model: MODEL(),
     messages: [
       {
         role: 'system',
@@ -196,17 +201,17 @@ Respond ONLY with valid JSON using exactly these fields — no extra text:
   }
   return {
     ...parsed,
-    source: 'GitHub Models (Azure AI infrastructure) — Foundry IQ',
+    source: 'Google Gemini',
     model: completion.model,
   };
 }
 
 export async function generateRiddle(topic = 'everyday objects') {
   const client = getClient();
-  if (!client) throw new Error('GitHub token not configured. Add GITHUB_TOKEN to server/.env');
+  if (!client) throw new Error(CONFIG_ERROR);
 
   const completion = await client.chat.completions.create({
-    model: 'gpt-4o-mini',
+    model: MODEL(),
     messages: [
       {
         role: 'system',
@@ -226,15 +231,19 @@ Rules: factually accurate, age-appropriate, short answer, fun phrasing.`,
       },
     ],
     temperature: 0.85,
-    max_tokens: 256,
+    max_tokens: 1024,
     response_format: { type: 'json_object' },
   });
+
+  if (completion.choices[0]?.finish_reason === 'length') {
+    throw new Error('Gemini truncated the riddle response because the output token limit was reached.');
+  }
 
   const parsed = JSON.parse(completion.choices[0].message.content);
   return {
     ...parsed,
     type: 'text',
-    source: 'GitHub Models (Azure AI infrastructure) — Foundry IQ',
+    source: 'Google Gemini',
     model: completion.model,
   };
 }

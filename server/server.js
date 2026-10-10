@@ -6,7 +6,7 @@ import dotenv from 'dotenv';
 import bcrypt from 'bcryptjs';
 import { Pool } from 'pg';
 import { questionTemplates } from './data/questions.js';
-import { isFoundryConfigured, generateRiddle, randomTopic, classifyImage, generateLogoHint, generateBedtimeStory, generateMovieRecap } from './services/foundry.js';
+import { isGeminiConfigured, generateRiddle, randomTopic, classifyImage, generateLogoHint, generateBedtimeStory, generateMovieRecap } from './services/foundry.js';
 import { synthesizeSpeech } from './services/tts.js';
 import { setupBattleServer } from './services/battle.js';
 import { createKaraokeRound, checkKaraokeGuess, revealKaraokeRound } from './services/karaoke.js';
@@ -76,14 +76,14 @@ async function getUserById(userId) {
 await initDb();
 
 app.get('/health', (_req, res) => {
-  res.json({ ok: true, message: 'Server running', foundryIq: isFoundryConfigured() });
+  res.json({ ok: true, message: 'Server running', geminiConfigured: isGeminiConfigured() });
 });
 
 app.post('/api/foundry/riddle', async (req, res) => {
-  if (!isFoundryConfigured()) {
+  if (!isGeminiConfigured()) {
     return res.status(503).json({
-      error: 'Foundry IQ is not configured.',
-      hint: 'Add AZURE_AI_FOUNDRY_ENDPOINT, AZURE_AI_API_KEY, and AZURE_DEPLOYMENT_NAME to server/.env',
+      error: 'Gemini is not configured.',
+      hint: 'Set GEMINI_API_KEY in server/.env',
     });
   }
   const topic = req.body?.topic || randomTopic();
@@ -91,15 +91,16 @@ app.post('/api/foundry/riddle', async (req, res) => {
     const riddle = await generateRiddle(topic);
     res.json({ riddle });
   } catch (err) {
+    console.error('generateRiddle error:', err.message);
     res.status(500).json({ error: 'Failed to generate riddle. Check your Foundry configuration.' });
   }
 });
 
 app.post('/api/foundry/classify', async (req, res) => {
-  if (!isFoundryConfigured()) {
+  if (!isGeminiConfigured()) {
     return res.status(503).json({
-      error: 'Foundry IQ is not configured.',
-      hint: 'Add GITHUB_TOKEN to server/.env',
+      error: 'Gemini is not configured.',
+      hint: 'Set GEMINI_API_KEY in server/.env',
     });
   }
   const { imageBase64, mimeType, expectedAnswer } = req.body;
@@ -116,8 +117,8 @@ app.post('/api/foundry/classify', async (req, res) => {
 });
 
 app.post('/api/foundry/logo-hint', async (req, res) => {
-  if (!isFoundryConfigured()) {
-    return res.status(503).json({ error: 'Foundry IQ is not configured. Add GITHUB_TOKEN to server/.env' });
+  if (!isGeminiConfigured()) {
+    return res.status(503).json({ error: 'Gemini is not configured. Set GEMINI_API_KEY in server/.env' });
   }
   const { brandName } = req.body;
   if (!brandName) return res.status(400).json({ error: 'brandName is required.' });
@@ -130,8 +131,8 @@ app.post('/api/foundry/logo-hint', async (req, res) => {
 });
 
 app.post('/api/foundry/story', async (req, res) => {
-  if (!isFoundryConfigured()) {
-    return res.status(503).json({ error: 'Foundry IQ is not configured. Add GITHUB_TOKEN to server/.env' });
+  if (!isGeminiConfigured()) {
+    return res.status(503).json({ error: 'Gemini is not configured. Set GEMINI_API_KEY in server/.env' });
   }
   const { hero, trait, place, friend, magic } = req.body || {};
   if (!hero || !trait || !place || !friend || !magic) {
@@ -188,8 +189,8 @@ app.get('/api/battle/info', (_req, res) => {
 });
 
 app.post('/api/foundry/recap', async (req, res) => {
-  if (!isFoundryConfigured()) {
-    return res.status(503).json({ error: 'Foundry IQ is not configured. Add GITHUB_TOKEN to server/.env' });
+  if (!isGeminiConfigured()) {
+    return res.status(503).json({ error: 'Gemini is not configured. Set GEMINI_API_KEY in server/.env' });
   }
   const { title } = req.body || {};
   if (!title || typeof title !== 'string' || !title.trim()) {

@@ -10,6 +10,6 @@ services:
     startCommand: npm run start
     healthCheckPath: /health
     envVars:
-      # Set this in the Render dashboard (do NOT commit the token).
-      - key: GITHUB_TOKEN
+      # Set this in the Render dashboard (do NOT commit credentials).
+      - key: GEMINI_API_KEY
         sync: false

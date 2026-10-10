@@ -62,7 +62,7 @@ function MovieRecap({ onBack }) {
         </div>
         <button className="secondary-btn" onClick={() => { stop(); onBack(); }}>Back home</button>
       </div>
-      <div className="foundry-badge" style={{ marginBottom: 16 }}>✦ Foundry IQ</div>
+      <div className="foundry-badge" style={{ marginBottom: 16 }}>✦ Google Gemini</div>
 
       {(phase === 'idle' || phase === 'loading' || phase === 'unknown' || phase === 'error') && (
         <div className="game-card">
@@ -86,7 +86,7 @@ function MovieRecap({ onBack }) {
             {phase === 'loading' && (
               <div className="foundry-loading">
                 <div className="foundry-spinner" />
-                <p className="small">Foundry IQ is rewatching the movie at super speed...</p>
+                <p className="small">Gemini is recapping the movie at super speed...</p>
               </div>
             )}
             {phase === 'unknown' && (

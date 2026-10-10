@@ -118,7 +118,7 @@ function StoryTeller({ onBack }) {
         </div>
         <button className="secondary-btn" onClick={() => { stop(); onBack(); }}>Back</button>
       </div>
-      <div className="foundry-badge" style={{ marginBottom: 16 }}>✦ Foundry IQ</div>
+      <div className="foundry-badge" style={{ marginBottom: 16 }}>✦ Google Gemini</div>
 
       {phase === 'questions' && (
         <div className="game-card">
@@ -150,7 +150,7 @@ function StoryTeller({ onBack }) {
       {phase === 'loading' && (
         <div className="foundry-loading">
           <div className="foundry-spinner" />
-          <p className="small">Foundry IQ is writing tonight's story just for you... this takes a little moment.</p>
+          <p className="small">Gemini is writing tonight's story just for you... this takes a little moment.</p>
         </div>
       )}
 
