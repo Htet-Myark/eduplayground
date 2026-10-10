@@ -80,7 +80,7 @@ input { padding: 10px 12px; border-radius: 12px; border: 1px solid rgba(255,255,
 .game-celebration .actions { justify-content: center; margin-top: 20px; }
 @keyframes celebPop { from { transform: scale(0) rotate(-20deg); opacity:0; } to { transform: scale(1) rotate(0deg); opacity:1; } }
 
-/* ── Foundry IQ ───────────────────────────────── */
+/* ── AI provider feature cards ────────────────── */
 .foundry-badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 999px; background: rgba(0,120,212,0.18); border: 1px solid rgba(0,120,212,0.45); color: #5ea3f5; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.06em; }
 .foundry-card { border-color: rgba(0,120,212,0.35); background: linear-gradient(135deg, rgba(0,120,212,0.14), rgba(79,140,255,0.1)); }
 .foundry-loading { display: flex; align-items: center; gap: 14px; padding: 24px 0; }
@@ -192,7 +192,6 @@ input[type="range"] { padding: 0; background: transparent; border: none; accent-
 .story-text { display: flex; flex-direction: column; gap: 4px; }
 .story-paragraph { font-size: 1.05rem; line-height: 1.7; color: #dce8f7; padding: 6px 10px; border-radius: 10px; margin: 0 0 6px; transition: background 0.3s, color 0.3s; }
 .story-paragraph.reading, .story-title.reading { background: rgba(69, 211, 191, 0.14); color: #fff; box-shadow: inset 3px 0 0 #45d3bf; }
-
 
 
 

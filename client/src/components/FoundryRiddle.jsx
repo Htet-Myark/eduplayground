@@ -49,22 +49,22 @@ function FoundryRiddle({ onBack }) {
       <div className="page-topbar">
         <div>
           <p className="eyebrow">Kids • AI Riddle</p>
-          <h2>Foundry IQ Riddle Challenge</h2>
+          <h2>Gemini Riddle Challenge</h2>
         </div>
         <button className="secondary-btn" onClick={onBack}>Back</button>
       </div>
-      <div className="foundry-badge" style={{ marginBottom: 20 }}>✦ Powered by Azure AI Foundry — Foundry IQ</div>
+      <div className="foundry-badge" style={{ marginBottom: 20 }}>✦ Powered by Google Gemini</div>
       {loading && (
         <div className="foundry-loading">
           <div className="foundry-spinner" />
-          <p className="small">Foundry IQ is generating your riddle...</p>
+          <p className="small">Gemini is generating your riddle...</p>
         </div>
       )}
       {error && (
         <div className="game-card">
           <p className="error">{error}</p>
           <p className="small" style={{ marginTop: 8 }}>
-            To enable this feature, add <code>GITHUB_TOKEN=ghp_...</code> to <code>server/.env</code>.
+            Check the backend terminal for the provider error. Verify <code>GEMINI_API_KEY</code> in <code>server/.env</code>.
           </p>
           <div className="actions">
             <button className="primary-btn" onClick={() => fetchRiddle()}>Try again</button>

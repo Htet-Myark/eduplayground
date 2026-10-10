@@ -51,7 +51,7 @@ function LogoGuesser({ onBack }) {
         </div>
         <button className="secondary-btn" onClick={onBack}>Back</button>
       </div>
-      <div className="foundry-badge" style={{ marginBottom: 16 }}>✦ Foundry IQ</div>
+      <div className="foundry-badge" style={{ marginBottom: 16 }}>✦ Google Gemini</div>
 
       {gameState === 'done' ? (
         <div className="game-celebration">

@@ -136,7 +136,7 @@ function PhotoQuiz({ onBack }) {
         </div>
         <button className="secondary-btn" onClick={() => { stopCamera(); onBack(); }}>Back</button>
       </div>
-      <div className="foundry-badge" style={{ marginBottom: 16 }}>✦ Foundry IQ Vision</div>
+      <div className="foundry-badge" style={{ marginBottom: 16 }}>✦ Gemini Vision</div>
 
       {cameraState !== 'done' && round.length > 0 && (
         <div className="game-banner" style={{ marginBottom: 12 }}>
@@ -222,7 +222,7 @@ function PhotoQuiz({ onBack }) {
                       </div>
                     </div>
                     <p className="small foundry-source" style={{ marginTop: 10 }}>
-                      Classified by GitHub Models (Azure AI infrastructure) — Foundry IQ Vision
+                      Classified by Google Gemini
                     </p>
                     <div className="actions" style={{ marginTop: 12 }}>
                       <button className="primary-btn" onClick={nextChallenge}>

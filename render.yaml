@@ -1,0 +1,15 @@
+# Render Blueprint for the EduPlayground backend (Express + WebSocket).
+# Render injects PORT automatically; server.js already reads process.env.PORT.
+services:
+  - type: web
+    name: eduplayground-api
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm install
+    startCommand: npm run start
+    healthCheckPath: /health
+    envVars:
+      # Set this in the Render dashboard (do NOT commit credentials).
+      - key: GEMINI_API_KEY
+        sync: false

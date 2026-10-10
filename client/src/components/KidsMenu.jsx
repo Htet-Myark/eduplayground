@@ -15,13 +15,13 @@ function KidsMenu({ onNavigate, onBack }) {
           <button className="primary-btn" onClick={() => onNavigate('pronunciationGame')}>Play game</button>
         </div>
         <div className="exam-card foundry-card">
-          <div className="foundry-badge">✦ Foundry IQ</div>
+          <div className="foundry-badge">✦ Google Gemini</div>
           <h3>AI Riddle Challenge</h3>
-          <p>Fresh riddles generated live by Azure AI Foundry. A new puzzle every time.</p>
+          <p>Fresh riddles generated live by Google Gemini. A new puzzle every time.</p>
           <button className="primary-btn" onClick={() => onNavigate('foundryRiddle')}>Try an AI riddle</button>
         </div>
         <div className="exam-card foundry-card">
-          <div className="foundry-badge">✦ Foundry IQ Vision</div>
+          <div className="foundry-badge">✦ Gemini Vision</div>
           <h3>Photo Challenge</h3>
           <p>Find an everyday object, snap a photo, and let AI check if you got it right!</p>
           <button className="primary-btn" onClick={() => onNavigate('photoQuiz')}>Start photo quiz</button>
@@ -32,13 +32,13 @@ function KidsMenu({ onNavigate, onBack }) {
           <button className="primary-btn" onClick={() => onNavigate('wordBattle')}>Start a battle</button>
         </div>
         <div className="exam-card foundry-card">
-          <div className="foundry-badge">✦ Foundry IQ</div>
+          <div className="foundry-badge">✦ Google Gemini</div>
           <h3>Bedtime Story Teller</h3>
           <p>Answer 5 fun questions and AI writes a 10-minute bedtime story, then reads it aloud to you.</p>
           <button className="primary-btn" onClick={() => onNavigate('storyTeller')}>Make my story</button>
         </div>
         <div className="exam-card foundry-card">
-          <div className="foundry-badge">✦ Foundry IQ</div>
+          <div className="foundry-badge">✦ Google Gemini</div>
           <h3>Logo Guesser</h3>
           <p>Look at a brand icon and type the name. How many can you get right?</p>
           <button className="primary-btn" onClick={() => onNavigate('logoGuesser')}>Play logo quiz</button>

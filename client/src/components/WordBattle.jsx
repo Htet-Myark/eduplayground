@@ -94,6 +94,17 @@ function WordBattle({ onBack }) {
   }, []);
 
   useEffect(() => {
+    const { hostname, origin } = window.location;
+    const isLocal =
+      hostname === 'localhost' ||
+      hostname === '127.0.0.1' ||
+      /^\d{1,3}(\.\d{1,3}){3}$/.test(hostname);
+    // Deployed publicly: a friend just opens this same URL from any device.
+    if (!isLocal) {
+      setLanUrl(origin);
+      return;
+    }
+    // Local network: show the http://<your-ip>:3000 address from the server.
     fetch(`${API_URL}/api/battle/info`)
       .then((res) => res.json())
       .then((data) => {
@@ -225,7 +236,7 @@ function WordBattle({ onBack }) {
           <div className="battle-room-code">{roomCode}</div>
           {lanUrl && (
             <p className="small" style={{ marginTop: 14 }}>
-              On their device (same Wi-Fi), open <strong>{lanUrl}</strong> → Kids → Word Battle → Join.
+              On their device, open <strong>{lanUrl}</strong> → Kids → Word Battle → Join.
             </p>
           )}
           <div className="actions">

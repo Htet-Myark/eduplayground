@@ -15,20 +15,23 @@ const TOPICS = [
 ];
 
 function getClient() {
-  if (!process.env.GITHUB_TOKEN) {
-    throw new Error('GITHUB_TOKEN not set — add it to server/.env');
+  const apiKey = process.env.GEMINI_API_KEY?.trim();
+  if (!apiKey) {
+    throw new Error('Set GEMINI_API_KEY in server/.env');
   }
   return new OpenAI({
-    baseURL: 'https://models.inference.ai.azure.com',
-    apiKey: process.env.GITHUB_TOKEN,
+    baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai/',
+    apiKey,
   });
 }
+
+const getModel = () => process.env.GEMINI_MODEL?.trim() || 'gemini-3.8-flash';
 
 const server = new McpServer({ name: 'eduplayground', version: '1.0.0' });
 
 server.tool(
   'generate_riddle',
-  'Generate a kid-friendly riddle powered by Azure AI Foundry (Foundry IQ). Returns the riddle question, answer, and explanation.',
+  'Generate a kid-friendly riddle powered by Google Gemini. Returns the riddle question, answer, and explanation.',
   {
     topic: z.string().optional().describe(
       'Topic for the riddle, e.g. animals, space, food and fruit. A random topic is chosen if omitted.'
@@ -38,7 +41,7 @@ server.tool(
     const client = getClient();
     const chosen = topic || TOPICS[Math.floor(Math.random() * TOPICS.length)];
     const completion = await client.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: getModel(),
       messages: [
         {
           role: 'system',
@@ -64,14 +67,14 @@ Respond ONLY with valid JSON using exactly these fields:
 
 server.tool(
   'generate_logo_hint',
-  'Generate a child-friendly visual clue for a brand logo without revealing the brand name. Powered by Azure AI Foundry (Foundry IQ).',
+  'Generate a child-friendly visual clue for a brand logo without revealing the brand name. Powered by Google Gemini.',
   {
     brand_name: z.string().describe('The brand to generate a hint for, e.g. YouTube, Apple, Nike.'),
   },
   async ({ brand_name }) => {
     const client = getClient();
     const completion = await client.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: getModel(),
       messages: [
         {
           role: 'system',
@@ -118,15 +121,15 @@ server.tool(
 );
 
 server.tool(
-  'foundry_status',
-  'Check whether the Azure AI Foundry (Foundry IQ) integration is configured and working.',
+  'gemini_status',
+  'Check whether the Google Gemini API integration is configured.',
   {},
   async () => ({
     content: [{
       type: 'text',
-      text: process.env.GITHUB_TOKEN
-        ? '✅ Foundry IQ is configured. GITHUB_TOKEN is present and AI features are active.'
-        : '❌ Foundry IQ is NOT configured. Add GITHUB_TOKEN to server/.env to enable AI riddles, image classification, and logo hints.',
+      text: process.env.GEMINI_API_KEY?.trim()
+        ? '✅ Gemini is configured. The API key is present and AI features are active.'
+        : '❌ Gemini is NOT configured. Set GEMINI_API_KEY in server/.env to enable AI features.',
     }],
   })
 );
