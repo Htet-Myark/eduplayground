@@ -15,6 +15,40 @@ function getClient() {
 }
 
 const MODEL = () => process.env.GEMINI_MODEL?.trim() || 'gemini-3.8-flash';
+/* One tiny call to Gemini, reported as a reason a person can act on. Never
+   includes the key; long digit runs (project numbers) are masked. */
+export async function checkGemini() {
+  const apiKey = process.env.GEMINI_API_KEY?.trim();
+  if (!apiKey) return { ok: false, model: MODEL(), reason: 'no_api_key' };
+  try {
+    /* plain fetch, not the SDK: Gemini returns errors as a JSON array, which the
+       OpenAI SDK cannot read, so it would hide the very message we want */
+    const r = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: `Bearer ${apiKey}` },
+      body: JSON.stringify({
+        model: MODEL(),
+        messages: [{ role: 'user', content: 'Reply with the word OK.' }],
+        max_tokens: 5,
+      }),
+      signal: AbortSignal.timeout(20_000),
+    });
+    if (r.ok) return { ok: true, model: MODEL(), status: r.status };
+    let body = await r.json().catch(() => null);
+    if (Array.isArray(body)) body = body[0];
+    const e = body?.error || {};
+    return {
+      ok: false,
+      model: MODEL(),
+      status: r.status,
+      reason: e.status || 'error',
+      message: String(e.message || '').replace(/\d{7,}/g, '…').slice(0, 300),
+    };
+  } catch (err) {
+    return { ok: false, model: MODEL(), reason: 'network', message: String(err?.message || err).slice(0, 200) };
+  }
+}
+
 const CONFIG_ERROR = 'Gemini is not configured. Set GEMINI_API_KEY in server/.env.';
 
 const RIDDLE_TOPICS = [

@@ -6,7 +6,7 @@ import dotenv from 'dotenv';
 import bcrypt from 'bcryptjs';
 import { Pool } from 'pg';
 import { questionTemplates } from './data/questions.js';
-import { isGeminiConfigured, generateRiddle, randomTopic, classifyImage, generateLogoHint, generateBedtimeStory, generateMovieRecap } from './services/foundry.js';
+import { isGeminiConfigured, checkGemini, generateRiddle, randomTopic, classifyImage, generateLogoHint, generateBedtimeStory, generateMovieRecap } from './services/foundry.js';
 import { synthesizeSpeech } from './services/tts.js';
 import { setupBattleServer } from './services/battle.js';
 import { createKaraokeRound, checkKaraokeGuess, revealKaraokeRound } from './services/karaoke.js';
@@ -77,6 +77,16 @@ await initDb();
 
 app.get('/health', (_req, res) => {
   res.json({ ok: true, message: 'Server running', geminiConfigured: isGeminiConfigured() });
+});
+
+/* a real round trip to Gemini, cached for a minute so it cannot burn quota */
+let geminiCheck = { at: 0, result: null };
+app.get('/health/gemini', async (_req, res) => {
+  if (!geminiCheck.result || Date.now() - geminiCheck.at > 60_000) {
+    geminiCheck = { at: Date.now(), result: await checkGemini() };
+  }
+  res.status(geminiCheck.result.ok ? 200 : 503)
+    .json({ ...geminiCheck.result, checkedAt: new Date(geminiCheck.at).toISOString() });
 });
 
 app.post('/api/foundry/riddle', async (req, res) => {
