@@ -4,48 +4,83 @@ export function isGeminiConfigured() {
   return Boolean(process.env.GEMINI_API_KEY?.trim());
 }
 
+/* Gemini models get overloaded ("503 This model is currently experiencing high
+   demand"), sometimes for long stretches. Every call therefore walks a chain:
+   GEMINI_MODEL first, then GEMINI_FALLBACK_MODELS, moving on when a model is
+   overloaded, rate-limited, erroring or missing. Anything else (a bad request,
+   a bad key) is thrown straight away, since another model would not help. */
+const MODEL = () => process.env.GEMINI_MODEL?.trim() || 'gemini-3.8-flash';
+const FALLBACKS = () => (process.env.GEMINI_FALLBACK_MODELS ?? 'gemini-3.5-flash,gemini-3.5-flash-lite')
+  .split(',').map(m => m.trim()).filter(Boolean);
+const modelChain = () => [...new Set([MODEL(), ...FALLBACKS()])];
+const RETRYABLE = new Set([404, 429, 500, 502, 503, 504]);
+
+async function createWithFallback(raw, params) {
+  let lastErr;
+  for (const model of modelChain()) {
+    try {
+      return await raw.chat.completions.create({ ...params, model });
+    } catch (err) {
+      if (!RETRYABLE.has(err?.status)) throw err;
+      console.warn(`Gemini ${model} failed with ${err.status}; trying the next model`);
+      lastErr = err;
+    }
+  }
+  throw lastErr;
+}
+
 function getClient() {
   const apiKey = process.env.GEMINI_API_KEY?.trim();
   if (!apiKey) return null;
 
-  return new OpenAI({
+  const raw = new OpenAI({
     baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai/',
     apiKey,
+    maxRetries: 1,        // one quick retry per model; the chain does the rest
+    timeout: 30_000,
   });
+  return { chat: { completions: { create: params => createWithFallback(raw, params) } } };
 }
 
-const MODEL = () => process.env.GEMINI_MODEL?.trim() || 'gemini-3.8-flash';
 /* One tiny call to Gemini, reported as a reason a person can act on. Never
    includes the key; long digit runs (project numbers) are masked. */
 export async function checkGemini() {
   const apiKey = process.env.GEMINI_API_KEY?.trim();
-  if (!apiKey) return { ok: false, model: MODEL(), reason: 'no_api_key' };
+  if (!apiKey) return { ok: false, reason: 'no_api_key' };
+  const tried = [];
+  for (const model of modelChain()) {
+    const r = await probeModel(apiKey, model);
+    tried.push(r);
+    if (r.ok) break;
+  }
+  const served = tried.find(t => t.ok);
+  return { ok: Boolean(served), servedBy: served?.model ?? null, tried };
+}
+
+/* plain fetch, not the SDK: Gemini returns errors as a JSON array, which the
+   OpenAI SDK cannot read, so it would hide the very message we want */
+async function probeModel(apiKey, model) {
   try {
-    /* plain fetch, not the SDK: Gemini returns errors as a JSON array, which the
-       OpenAI SDK cannot read, so it would hide the very message we want */
     const r = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
       method: 'POST',
       headers: { 'content-type': 'application/json', authorization: `Bearer ${apiKey}` },
       body: JSON.stringify({
-        model: MODEL(),
+        model,
         messages: [{ role: 'user', content: 'Reply with the word OK.' }],
         max_tokens: 5,
       }),
       signal: AbortSignal.timeout(20_000),
     });
-    if (r.ok) return { ok: true, model: MODEL(), status: r.status };
+    if (r.ok) return { model, ok: true, status: r.status };
     let body = await r.json().catch(() => null);
     if (Array.isArray(body)) body = body[0];
     const e = body?.error || {};
     return {
-      ok: false,
-      model: MODEL(),
-      status: r.status,
-      reason: e.status || 'error',
-      message: String(e.message || '').replace(/\d{7,}/g, '…').slice(0, 300),
+      model, ok: false, status: r.status, reason: e.status || 'error',
+      message: String(e.message || '').replace(/\d{7,}/g, '…').slice(0, 200),
     };
   } catch (err) {
-    return { ok: false, model: MODEL(), reason: 'network', message: String(err?.message || err).slice(0, 200) };
+    return { model, ok: false, reason: 'network', message: String(err?.message || err).slice(0, 200) };
   }
 }
 
