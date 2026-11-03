@@ -52,7 +52,9 @@ PORT=5000
 GEMINI_API_KEY=your-gemini-api-key
 ```
 
-The default model is `gemini-3.8-flash`. To use another model available to your API key, optionally set:
+The default model is `gemini-3.5-flash`. If a model is overloaded, rate-limited or missing, each call falls back
+through `GEMINI_FALLBACK_MODELS` (default `gemini-3.8-flash,gemini-3.5-flash-lite`); `GET /health/gemini` shows
+which model is answering. To use another model available to your API key, optionally set:
 
 ```dotenv
 GEMINI_MODEL=your-model-name

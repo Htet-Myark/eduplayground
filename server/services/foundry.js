@@ -9,8 +9,8 @@ export function isGeminiConfigured() {
    GEMINI_MODEL first, then GEMINI_FALLBACK_MODELS, moving on when a model is
    overloaded, rate-limited, erroring or missing. Anything else (a bad request,
    a bad key) is thrown straight away, since another model would not help. */
-const MODEL = () => process.env.GEMINI_MODEL?.trim() || 'gemini-3.8-flash';
-const FALLBACKS = () => (process.env.GEMINI_FALLBACK_MODELS ?? 'gemini-3.5-flash,gemini-3.5-flash-lite')
+const MODEL = () => process.env.GEMINI_MODEL?.trim() || 'gemini-3.5-flash';
+const FALLBACKS = () => (process.env.GEMINI_FALLBACK_MODELS ?? 'gemini-3.8-flash,gemini-3.5-flash-lite')
   .split(',').map(m => m.trim()).filter(Boolean);
 const modelChain = () => [...new Set([MODEL(), ...FALLBACKS()])];
 const RETRYABLE = new Set([404, 429, 500, 502, 503, 504]);
