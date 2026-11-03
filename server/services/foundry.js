@@ -84,6 +84,20 @@ async function probeModel(apiKey, model) {
   }
 }
 
+/* Read a JSON reply. Gemini 3.x thinks before answering and the thinking counts
+   against max_tokens, so a reply can be cut off mid-JSON; say so plainly rather
+   than surfacing a bare "Unexpected end of JSON input". Code fences are stripped. */
+function readJson(completion, what) {
+  const choice = completion.choices?.[0];
+  const text = (choice?.message?.content || '').trim().replace(/^```(?:json)?\s*|\s*```$/g, '');
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new Error(`${what}: unreadable JSON from ${completion.model} ` +
+      `(finish_reason ${choice?.finish_reason}, ${text.length} chars)`);
+  }
+}
+
 const CONFIG_ERROR = 'Gemini is not configured. Set GEMINI_API_KEY in server/.env.';
 
 const RIDDLE_TOPICS = [
@@ -187,11 +201,11 @@ Respond with JSON: { "title": "a short magical story title", "paragraphs": ["...
       { role: 'user', content: setupMessage },
     ],
     temperature: 0.9,
-    max_tokens: 2500,
+    max_tokens: 8192,   // room for the model's thinking as well as ~8 paragraphs of JSON
     response_format: { type: 'json_object' },
   });
 
-  const firstPart = JSON.parse(firstCompletion.choices[0].message.content);
+  const firstPart = readJson(firstCompletion, 'story, first half');
   if (!firstPart.title || !Array.isArray(firstPart.paragraphs) || firstPart.paragraphs.length === 0) {
     throw new Error('Model returned unexpected story format.');
   }
@@ -210,11 +224,11 @@ Respond with JSON: { "paragraphs": ["...", ... 8 paragraphs] }`,
       },
     ],
     temperature: 0.9,
-    max_tokens: 2500,
+    max_tokens: 8192,   // room for the model's thinking as well as ~8 paragraphs of JSON
     response_format: { type: 'json_object' },
   });
 
-  const secondPart = JSON.parse(secondCompletion.choices[0].message.content);
+  const secondPart = readJson(secondCompletion, 'story, second half');
   if (!Array.isArray(secondPart.paragraphs) || secondPart.paragraphs.length === 0) {
     throw new Error('Model returned unexpected story format.');
   }
