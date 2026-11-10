@@ -220,10 +220,10 @@ function BlindKaraoke({ onBack }) {
           <div className="game-banner">
             <h3>Song {roundNum + 1} of {TOTAL_ROUNDS}</h3>
             <div style={{ display: 'flex', gap: 8 }}>
-              <span className="attempt-badge" style={{ background: 'rgba(69,211,191,0.12)', color: '#45d3bf', borderColor: 'rgba(69,211,191,0.3)' }}>
+              <span className="attempt-badge" style={{ background: 'rgba(69,211,191,0.12)', color: '#0f8a78', borderColor: 'rgba(69,211,191,0.3)' }}>
                 {score} correct
               </span>
-              <span className="attempt-badge" style={{ background: 'rgba(255,204,102,0.12)', color: '#ffcc66', borderColor: 'rgba(255,204,102,0.3)' }}>
+              <span className="attempt-badge" style={{ background: 'rgba(255,204,102,0.12)', color: '#b7791f', borderColor: 'rgba(255,204,102,0.3)' }}>
                 ⏱ {timer}s
               </span>
             </div>
