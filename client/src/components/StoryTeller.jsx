@@ -124,7 +124,7 @@ function StoryTeller({ onBack }) {
         <div className="game-card">
           <div className="game-banner">
             <h3>Question {step + 1} of {STORY_QUESTIONS.length}</h3>
-            <span className="attempt-badge" style={{ background: 'rgba(69,211,191,0.12)', color: '#45d3bf', borderColor: 'rgba(69,211,191,0.3)' }}>
+            <span className="attempt-badge" style={{ background: 'rgba(69,211,191,0.12)', color: '#0f8a78', borderColor: 'rgba(69,211,191,0.3)' }}>
               Building your story
             </span>
           </div>
